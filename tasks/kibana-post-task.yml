@@ -1,0 +1,35 @@
+---
+
+- name: KIBANA POST INSTALLATION TASK | Apply Custom Configs [from files]
+  uri:
+    url: "{{ kibana_url }}{{ item.endpoint }}"
+    method: "{{ item.method }}"
+    status_code: [ "200", "201", "202", "204" ]
+    user: "{{ kibana_es_user | default('elastic') }}"
+    password: "{{ kibana_es_password | default('') }}"
+    body: "{{ lookup('file', item.file ) }}"
+    body_format: json
+    force_basic_auth: yes
+    headers:
+      kbn-xsrf: "kibana"
+  run_once: true
+  with_items: "{{ kibana_config_files }}"
+  when: kibana_config_files is defined and kibana_config_files != ""
+  tags: [ run_post_installation_tasks ]
+
+- name: KIBANA POST INSTALLATION TASK | Apply Custom Configs [from templates]
+  uri:
+    url: "{{ kibana_url }}{{ item.endpoint }}"
+    method: "{{ item.method }}"
+    status_code: [ "200", "201", "202", "204" ]
+    user: "{{ kibana_es_user | default('elastic') }}"
+    password: "{{ kibana_es_password | default('') }}"
+    body: "{{ lookup('template', item.template ) }}"
+    body_format: json
+    force_basic_auth: yes
+    headers:
+      kbn-xsrf: "kibana"
+  run_once: true
+  with_items: "{{ kibana_config_templates }}"
+  when: kibana_config_templates is defined and kibana_config_templates != ""
+  tags: [ run_post_installation_tasks ]

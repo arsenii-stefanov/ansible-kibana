@@ -1,0 +1,19 @@
+---
+
+######################################
+###                                ###
+###       MANAGED BY ANSIBLE       ###
+###     (DO NOT EDIT MANUALLY)     ###
+###                                ###
+######################################
+
+server.name: {{ kibana_config['config_opts']['server_name'] }}
+server.host: "{{ kibana_config['config_opts']['server_host'] }}"
+
+elasticsearch.username: {{ kibana_es_user }}
+elasticsearch.password: {{ kibana_es_password }}
+
+elasticsearch.hosts:
+  - http://{{ kibana_config['config_opts']['es_host'] }}:{{ kibana_config['config_opts']['es_port'] }}
+elasticsearch.requestTimeout: "{{ kibana_config['config_opts']['es_request_timeout'] }}"
+elasticsearch.shardTimeout: "{{ kibana_config['config_opts']['es_shard_timeout'] }}"

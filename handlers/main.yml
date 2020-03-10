@@ -1,0 +1,21 @@
+---
+
+- name: kibana_status
+  uri:
+    url: "{{ kibana_url }}/_cluster/health?local=true"
+    status_code: 200
+  register: kibana_result
+  until: kibana_result.status == 200
+  retries: 10
+  delay: 15
+
+- name: restart_kibana_docker
+  shell: "docker restart {{ kibana_config['docker_opts']['container_name'] }}"
+  notify: kibana_status
+
+- name: reload_nginx_docker
+  shell: "docker exec -i {{ kibana_nginx_config['docker_opts']['container_name'] }} nginx -s reload"
+
+- name: nginx_check_config_and_reload_docker
+  shell: "docker exec -i {{ kibana_nginx_config['docker_opts']['container_name'] }} nginx -t"
+  notify: reload_nginx_docker

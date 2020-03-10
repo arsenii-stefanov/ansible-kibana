@@ -1,0 +1,24 @@
+######################################
+###                                ###
+###       MANAGED BY ANSIBLE       ###
+###     (DO NOT EDIT MANUALLY)     ###
+###                                ###
+######################################
+
+upstream kibana {
+    server {{ kibana_config['docker_opts']['container_name'] }}:{{ kibana_http_port }};
+}
+
+server {
+    listen {{ kibana_nginx_http_port }};
+    server_name {% for item in kibana_nginx_config['vhost']['server_names'] %} {{ item }} {% endfor %};
+
+    location / {
+        proxy_pass http://kibana;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}

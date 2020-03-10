@@ -1,0 +1,41 @@
+---
+
+- name: KIBANA DOCKER TASK | Ensure That Docker Networks Exist
+  docker_network:
+    name: "{{ item }}"
+  with_items: "{{ kibana_config['docker_opts']['networks'] }}"
+
+- name: KIBANA DOCKER TASK | Start Docker Container [Kibana]
+  docker_container:
+    name: "{{ kibana_config['docker_opts']['container_name'] }}"
+    image: "{{ kibana_config['docker_opts']['image_name'] }}:{{ kibana_config['docker_opts']['image_tag'] }}"
+    state: started
+    restart_policy: always
+    detach: yes
+    interactive: yes
+    tty: yes
+    ports: "{{ kibana_config['docker_opts']['ports'] | default(omit) }}"
+    env: "{{ kibana_config['docker_opts']['env_vars'] }}"
+    volumes: "{{ kibana_config['docker_opts']['volumes'] | default(omit) }}"
+    log_driver: "{{ kibana_config['docker_opts']['log_driver'] | default(omit) }}"
+    network_mode: "{{ kibana_config['docker_opts']['network_mode'] | default(omit) }}"
+    networks: "{{ kibana_config['docker_opts']['networks'] | default(omit) }}"
+    purge_networks: "{{ kibana_config['docker_opts']['purge_networks'] | default(omit) }}"
+  no_log: true
+
+- name: KIBANA DOCKER TASK | Start Docker Container [NGINX]
+  docker_container:
+    name: "{{ kibana_nginx_config['docker_opts']['container_name'] }}"
+    image: "{{ kibana_nginx_config['docker_opts']['image_name'] }}:{{ kibana_nginx_config['docker_opts']['image_tag'] }}"
+    state: started
+    restart_policy: always
+    detach: yes
+    interactive: yes
+    tty: yes
+    ports: "{{ kibana_nginx_config['docker_opts']['ports'] }}"
+    volumes: "{{ kibana_nginx_config['docker_opts']['volumes'] | default(omit) }}"
+    log_driver: "{{ kibana_nginx_config['docker_opts']['log_driver'] | default(omit) }}"
+    network_mode: "{{ kibana_nginx_config['docker_opts']['network_mode'] | default(omit) }}"
+    networks: "{{ kibana_nginx_config['docker_opts']['networks'] | default(omit) }}"
+    purge_networks: "{{ kibana_nginx_config['docker_opts']['purge_networks'] | default(omit) }}"
+  when: kibana_nginx is defined and kibana_nginx == true

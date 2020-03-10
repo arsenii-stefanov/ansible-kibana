@@ -1,0 +1,12 @@
+---
+
+- name: Include Kibana Config Task
+  include_tasks: "kibana-config-docker.yml"
+  when: kibana_installation_type is defined and kibana_installation_type == 'docker'
+
+- name: Include Kibana Docker Task 
+  include_tasks: "kibana-docker.yml"
+  when: kibana_installation_type is defined and kibana_installation_type == 'docker'
+
+- name: Include Kibana Post Installation Task 
+  include_tasks: "kibana-post-task.yml"

@@ -1,0 +1,142 @@
+---
+
+kibana_installation_type: "docker"        # Available options: docker
+
+# START KIBANA CONFIG
+
+kibana_main_mount_dir: "/srv"
+
+kibana_user: "1000"
+kibana_group: "1000"
+kibana_http_port: "5601"
+kibana_main_host_dir: "{{ kibana_main_mount_dir }}/kibana"
+kibana_config_host_dir: "{{ kibana_main_host_dir }}/config"
+kibana_main_container_dir: "/usr/share/kibana"
+kibana_config_container_dir: "{{ kibana_main_container_dir }}/config"
+kibana_main_config: "kibana.yml"
+
+kibana_directories: [
+    {
+      host_dir: "{{ kibana_main_host_dir }}",
+      container_dir: "{{ kibana_main_container_dir }}",
+      owner: "{{ kibana_user }}",
+      group: "{{ kibana_group }}",
+      mode: "0755"
+    },
+    {
+      host_dir: "{{ kibana_config_host_dir }}",
+      container_dir: "{{ kibana_config_container_dir }}",
+      owner: "{{ kibana_user }}",
+      group: "{{ kibana_group }}",
+      mode: "0755"
+    }
+]
+
+kibana_files: [
+    {
+      src: "kibana/{{ kibana_main_config }}.j2",
+      dest: "{{ kibana_config_host_dir }}/{{ kibana_main_config }}",
+      owner: "{{ kibana_user }}",
+      group: "{{ kibana_group }}",
+      mode: "0600"
+    }
+]
+
+kibana_docker_network: 
+- name: "elasticsearch"    # Should be the same Docker network used by Elasticsearch
+kibana_es_host: "elasticsearch"           # Should be the same as the Elasticsearch Docker container's name
+kibane_es_port: "9200"
+
+kibana_config:
+  docker_opts:
+    container_name: "kibana"
+    image_name: "{{ kibana_image_name | default('docker.elastic.co/kibana/kibana') }}"
+    image_tag: "{{ kibana_image_tag | default('7.3.2') }}"
+    volumes:
+      - "{{ kibana_config_host_dir }}/{{ kibana_main_config }}:{{ kibana_config_container_dir }}/{{ kibana_main_config }}"
+#    ports:
+#      - "0.0.0.0:{{ kibana_http_port }}:{{ kibana_http_port }}"
+    env_vars:
+      NODE_OPTIONS: "--max-old-space-size={{ kibana_max_old_space_size | default('4096') }}"
+    log_driver: "json-file"
+    network_mode: "bridge"
+    networks: "{{ kibana_docker_network | default('elasticsearch') }}"
+    purge_networks: "true"
+  config_opts:
+    server_name: "kibana"
+    server_host: 0
+    es_host: "{{ kibana_es_host }}"
+    es_port: "{{ kibane_es_port }}"
+    http_port: "{{ kibana_http_port }}"
+    es_request_timeout: "300s"
+    es_shard_timeout: "300s"
+
+# END KIBANA CONFIG
+
+# START NGINX CONFIG
+
+kibana_nginx: true     # whether to install NGINX as a reverse proxy for Kibana or not
+
+kibana_nginx_user: "root"
+kibana_nginx_group: "root"
+kibana_nginx_main_host_dir: "{{ kibana_main_mount_dir }}/nginx"
+kibana_nginx_config_host_dir: "{{ kibana_nginx_main_host_dir }}/conf.d"
+kibana_nginx_main_container_dir: "/etc/nginx"
+kibana_nginx_config_container_dir: "/etc/nginx/conf.d"
+kibana_nginx_http_port: "80"
+
+kibana_dns_names: [ "kibana.example.com" ]
+
+kibana_url: "http://127.0.0.1:{{ kibana_http_port }}"
+
+kibana_nginx_config:
+  vhost:
+    server_names: "{{ kibana_dns_names }}"
+  docker_opts:
+    container_name: "nginx"
+    image_name: "nginx"
+    image_tag: "1.17-alpine"
+    volumes:
+      - "{{ kibana_nginx_config_host_dir }}:{{ kibana_nginx_config_container_dir }}"
+    ports:
+      - "{{ kibana_nginx_http_port }}:{{ kibana_nginx_http_port }}"
+    log_driver: "json-file"
+    network_mode: "bridge"
+    networks: "{{ kibana_docker_network | default('elasticsearch') }}"
+    purge_networks: "true"
+
+kibana_nginx_directories: [
+    {
+      host_dir: "{{ kibana_nginx_main_host_dir }}",
+      container_dir: "{{ kibana_nginx_main_container_dir }}",
+      owner: "{{ kibana_nginx_user }}",
+      group: "{{ kibana_nginx_group }}",
+      mode: "0755"
+    },
+    {
+      host_dir: "{{ kibana_nginx_config_host_dir }}",
+      container_dir: "{{ kibana_nginx_config_container_dir }}",
+      owner: "{{ kibana_nginx_user }}",
+      group: "{{ kibana_nginx_group }}",
+      mode: "0755"
+    }
+]
+
+kibana_nginx_files: [
+    {
+      src: "nginx/conf.d/default.conf.j2",
+      dest: "{{ kibana_nginx_config_host_dir }}/default.conf",
+      owner: "{{ kibana_nginx_user }}",
+      group: "{{ kibana_nginx_group }}",
+      mode: "0644"
+    },
+    {
+      src: "nginx/conf.d/kibana.conf.j2",
+      dest: "{{ kibana_nginx_config_host_dir }}/kibana.conf",
+      owner: "{{ kibana_nginx_user }}",
+      group: "{{ kibana_nginx_group }}",
+      mode: "0644"
+    }
+]
+
+# END NGINX CONFIG
