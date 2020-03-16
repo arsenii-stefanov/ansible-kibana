@@ -124,13 +124,13 @@ kibana_nginx_directories: [
 ]
 
 kibana_nginx_files: [
-    {
-      src: "nginx/conf.d/default.conf.j2",
-      dest: "{{ kibana_nginx_config_host_dir }}/default.conf",
-      owner: "{{ kibana_nginx_user }}",
-      group: "{{ kibana_nginx_group }}",
-      mode: "0644"
-    },
+#    {
+#      src: "nginx/conf.d/default.conf.j2",
+#      dest: "{{ kibana_nginx_config_host_dir }}/default.conf",
+#      owner: "{{ kibana_nginx_user }}",
+#      group: "{{ kibana_nginx_group }}",
+#      mode: "0644"
+#    },
     {
       src: "nginx/conf.d/kibana.conf.j2",
       dest: "{{ kibana_nginx_config_host_dir }}/kibana.conf",
