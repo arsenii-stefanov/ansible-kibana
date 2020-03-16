@@ -3,10 +3,14 @@
 - name: Include Kibana Config Task
   include_tasks: "kibana-config-docker.yml"
   when: kibana_installation_type is defined and kibana_installation_type == 'docker'
+  tags: [always]
 
 - name: Include Kibana Docker Task 
   include_tasks: "kibana-docker.yml"
   when: kibana_installation_type is defined and kibana_installation_type == 'docker'
+  tags: [always]
 
 - name: Include Kibana Post Installation Task 
   include_tasks: "kibana-post-task.yml"
+  when: ((elasticsearch_initial_setup is defined and elasticsearch_initial_setup == false) or elasticsearch_initial_setup is not defined) and inventory_hostname == ansible_play_hosts_all[0]
+  tags: [ run_post_installation_tasks ]

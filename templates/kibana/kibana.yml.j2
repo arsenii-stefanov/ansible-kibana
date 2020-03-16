@@ -10,10 +10,18 @@
 server.name: {{ kibana_config['config_opts']['server_name'] }}
 server.host: "{{ kibana_config['config_opts']['server_host'] }}"
 
+# Credentials that allow Kibana to access system indices in Elasticsearch (.kibana)
 elasticsearch.username: {{ kibana_es_user }}
 elasticsearch.password: {{ kibana_es_password }}
 
 elasticsearch.hosts:
-  - http://{{ kibana_config['config_opts']['es_host'] }}:{{ kibana_config['config_opts']['es_port'] }}
+{% for item in kibana_config['config_opts']['es_hosts'] %}
+  - {{ item }}
+{% endfor %}
 elasticsearch.requestTimeout: "{{ kibana_config['config_opts']['es_request_timeout'] }}"
 elasticsearch.shardTimeout: "{{ kibana_config['config_opts']['es_shard_timeout'] }}"
+
+# This key is a must if you have multiple Kibana instances behind a load balancer
+{% if xpack_security_encryption_key is defined and xpack_security_encryption_key != '' %}
+xpack.security.encryptionKey: {{ xpack_security_encryption_key }}
+{% endif %}

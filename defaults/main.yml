@@ -44,8 +44,8 @@ kibana_files: [
 
 kibana_docker_network: 
 - name: "elasticsearch"    # Should be the same Docker network used by Elasticsearch
-kibana_es_host: "elasticsearch"           # Should be the same as the Elasticsearch Docker container's name
-kibane_es_port: "9200"
+kibana_es_hosts:
+ - "http://elasticsearch:9200"           # Should be the same as the Elasticsearch Docker container's name, if Kibana and ES are hosted on the same server
 
 kibana_config:
   docker_opts:
@@ -65,8 +65,7 @@ kibana_config:
   config_opts:
     server_name: "kibana"
     server_host: 0
-    es_host: "{{ kibana_es_host }}"
-    es_port: "{{ kibane_es_port }}"
+    es_hosts: "{{ kibana_es_hosts }}"
     http_port: "{{ kibana_http_port }}"
     es_request_timeout: "300s"
     es_shard_timeout: "300s"
@@ -85,8 +84,10 @@ kibana_nginx_main_container_dir: "/etc/nginx"
 kibana_nginx_config_container_dir: "/etc/nginx/conf.d"
 kibana_nginx_http_port: "80"
 
-kibana_dns_names: [ "kibana.example.com" ]
+# NGINX Vhost server names, if your Kibana is behind a load balancer, use the default wildcard value '_'
+kibana_dns_names: [ "_" ]
 
+# URL needed to check Kibana status and/or apply configs via the API
 kibana_url: "http://127.0.0.1:{{ kibana_http_port }}"
 
 kibana_nginx_config:
